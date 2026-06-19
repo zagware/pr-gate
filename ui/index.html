@@ -705,6 +705,14 @@ pre.code-block {
 
 </div>
 
+<footer style="text-align:center;padding:32px 24px 48px;font-size:0.8rem;color:#aaa;">
+  <a href="https://zagware.io" style="color:#aaa;text-decoration:none;font-weight:600;">zagware.io</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/zagware/pr-gate" style="color:#aaa;text-decoration:none;">View source on GitHub</a>
+  &nbsp;·&nbsp;
+  MIT License — free to use and modify
+</footer>
+
 <script>
 // ── State ─────────────────────────────────────────────────────────────────
 const state = {
@@ -947,7 +955,7 @@ function generateWorkflow() {
   lines.push(`    steps:`)
   lines.push(`      - uses: actions/checkout@v4`)
   lines.push(``)
-  lines.push(`      - uses: zagware/pr-gate@v1`)
+  lines.push(`      - uses: zagware/pr-gate@v1  # github.com/zagware/pr-gate`)
   lines.push(`        with:`)
   lines.push(`          jira-base-url: \${{ secrets.JIRA_BASE_URL }}`)
   lines.push(`          jira-email: \${{ secrets.JIRA_EMAIL }}`)
