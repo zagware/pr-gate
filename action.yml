@@ -1,0 +1,40 @@
+name: 'PR Gate'
+description: 'Enforce Jira ticket links, branch naming, and merge policies on pull requests'
+author: 'Zagware'
+
+inputs:
+  jira-base-url:
+    description: 'Jira instance base URL (e.g. https://yoursite.atlassian.net)'
+    required: true
+  jira-email:
+    description: 'Jira account email for API authentication'
+    required: true
+  jira-api-token:
+    description: 'Jira API token'
+    required: true
+  github-token:
+    description: 'GitHub token for posting check results'
+    required: false
+    default: ${{ github.token }}
+  config-path:
+    description: 'Path to .pr-gate.yml config file'
+    required: false
+    default: '.pr-gate.yml'
+
+outputs:
+  result:
+    description: 'pass | warn | fail'
+  checks-passed:
+    description: 'Number of checks that passed'
+  checks-failed:
+    description: 'Number of checks that failed (blocking)'
+  checks-warned:
+    description: 'Number of checks that produced warnings'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'shield'
+  color: 'red'

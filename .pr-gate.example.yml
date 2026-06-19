@@ -1,0 +1,40 @@
+# .pr-gate.yml — commit this to your repo root
+# Remove the .example suffix and adjust to your project.
+
+jira:
+  # Your Atlassian site hostname (no https://)
+  base_url: "yourcompany.atlassian.net"
+
+  # Jira project keys to recognise in PR titles and branch names
+  project_keys: ["PROJ", "INFRA"]
+
+  # Require a Jira key (e.g. PROJ-123) in the PR title
+  require_in_title: true
+
+  # PR cannot be merged unless the linked issue is in one of these statuses
+  allowed_statuses_for_merge:
+    - "In Review"
+    - "Ready for QA"
+
+  # Optional: auto-transition the Jira issue when a PR is opened / merged
+  # transition_on_pr_open: "In Progress"
+  # transition_on_pr_merge: "Done"
+
+branch:
+  # Regex for branch names. Use {ticket} as a placeholder for the Jira key pattern.
+  # Examples:
+  #   "^(feat|fix|chore)/{ticket}-[a-z0-9-]+$"
+  #   "^(feature|bugfix|hotfix)/.*$"
+  pattern: "^(feat|fix|chore)/{ticket}-[a-z0-9-]+$"
+
+  # block = merge is prevented | warn = flag but allow
+  enforcement: block
+
+reviewers:
+  # Require at least one reviewer to be assigned
+  require_assigned: warn   # block | warn | off
+
+labels:
+  # Automatically apply GitHub labels derived from the linked Jira issue
+  from_jira_type: true      # Bug, Story, Task → bug / enhancement / task
+  from_jira_priority: true  # Highest/High/Medium/Low → priority:high etc.

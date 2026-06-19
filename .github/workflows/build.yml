@@ -1,0 +1,37 @@
+name: Build & release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Verify dist is committed
+        run: |
+          if [[ -n "$(git status dist --porcelain)" ]]; then
+            echo "::error::dist/ is out of date — run 'npm run build' and commit the result"
+            git diff dist
+            exit 1
+          fi
+
+      - name: Run self-check (dry run)
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "Build OK — integration tests would run here"

@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PR Gate · Configuration Wizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #f6f6f6;
+  color: #1a1a1a;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── Shell ── */
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+.header-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-decoration: none;
+}
+.header-sep { color: #ccc; }
+.header-title { font-size: 1.1rem; font-weight: 600; color: #444; }
+
+/* ── Progress ── */
+.progress {
+  display: flex;
+  gap: 0;
+  margin-bottom: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+.progress-step {
+  flex: 1;
+  padding: 10px 4px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #bbb;
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+  cursor: default;
+  transition: background 0.15s, color 0.15s;
+}
+.progress-step:last-child { border-right: none; }
+.progress-step.active { background: #1a1a1a; color: #fff; }
+.progress-step.done { background: #f0f0f0; color: #666; }
+
+/* ── Card ── */
+.card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 36px;
+  margin-bottom: 24px;
+}
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.card-sub {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* ── Form fields ── */
+.field { margin-bottom: 24px; }
+.field:last-child { margin-bottom: 0; }
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #1a1a1a;
+}
+.label-hint {
+  font-weight: 400;
+  color: #888;
+  font-size: 0.82rem;
+  margin-left: 6px;
+}
+
+input[type="text"],
+input[type="url"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: #1a1a1a;
+  background: #fafafa;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+input[type="text"]:focus,
+input[type="url"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+  background: #fff;
+}
+
+/* ── Tag input (for project keys) ── */
+.tag-input-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+  cursor: text;
+  min-height: 44px;
+  align-items: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tag-input-wrap:focus-within {
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+  background: #fff;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 10px 3px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+}
+.tag-remove:hover { color: #fff; }
+.tag-input-field {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.88rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1a1a1a;
+  width: 80px;
+  flex: 1;
+  min-width: 60px;
+  padding: 2px 4px;
+}
+.tag-hint {
+  font-size: 0.78rem;
+  color: #aaa;
+  margin-top: 6px;
+}
+
+/* ── Enforcement toggle ── */
+.enforcement-group {
+  display: flex;
+  gap: 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.enforcement-btn {
+  flex: 1;
+  padding: 9px 4px;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: #fafafa;
+  color: #888;
+  border-right: 1px solid #ddd;
+  transition: background 0.15s, color 0.15s;
+}
+.enforcement-btn:last-child { border-right: none; }
+.enforcement-btn.active.block { background: #1a1a1a; color: #fff; }
+.enforcement-btn.active.warn { background: #fff3cd; color: #856404; }
+.enforcement-btn.active.off { background: #f0f0f0; color: #555; }
+
+/* ── Status checkboxes ── */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.status-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 0.88rem;
+  font-weight: 500;
+  user-select: none;
+}
+.status-check input { display: none; }
+.status-check.checked {
+  border-color: #1a1a1a;
+  background: #f8f8f8;
+}
+.status-check-box {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.status-check.checked .status-check-box {
+  border-color: #1a1a1a;
+  background: #1a1a1a;
+  color: #fff;
+}
+.add-custom-status {
+  display: flex;
+  gap: 8px;
+}
+.add-custom-status input {
+  flex: 1;
+}
+.btn-sm {
+  padding: 9px 16px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn-sm:hover { background: #333; }
+
+/* ── Toggle switch ── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 0.9rem; font-weight: 500; }
+.toggle-desc { font-size: 0.8rem; color: #888; margin-top: 2px; }
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: #ddd;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle input:checked + .toggle-track { background: #1a1a1a; }
+.toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+
+/* ── Branch pattern ── */
+.pattern-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.preset-btn {
+  padding: 5px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 0.78rem;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  color: #444;
+}
+.preset-btn:hover, .preset-btn.active {
+  border-color: #1a1a1a;
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* ── Code output ── */
+.output-section { display: none; }
+.output-section.visible { display: block; }
+
+.output-file {
+  margin-bottom: 24px;
+}
+.output-file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.output-filename {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: #1a1a1a;
+  background: #f0f0f0;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.copy-btn {
+  padding: 6px 14px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  color: #444;
+}
+.copy-btn:hover { background: #f5f5f5; border-color: #bbb; }
+.copy-btn.copied { background: #d4edda; border-color: #a8d5b5; color: #155724; }
+
+pre.code-block {
+  background: #1a1a1a;
+  color: #e0e0e0;
+  padding: 20px 24px;
+  border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.75;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 0;
+}
+.code-comment { color: #6a737d; }
+.code-key { color: #79b8ff; }
+.code-str { color: #85e89d; }
+.code-bool { color: #f97583; }
+.code-num { color: #79b8ff; }
+
+/* ── Secrets callout ── */
+.secrets-box {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-top: 8px;
+}
+.secrets-box h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.secret-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+.secret-row:last-child { margin-bottom: 0; }
+.secret-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #f0f0f0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  min-width: 180px;
+}
+.secret-desc { color: #666; }
+
+/* ── Nav buttons ── */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.btn-back {
+  padding: 12px 24px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.15s;
+}
+.btn-back:hover { background: #f5f5f5; }
+.btn-next {
+  padding: 12px 28px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-next:hover { background: #333; }
+
+.section-hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="header">
+    <a href="https://zagware.io" class="header-logo">Zagware</a>
+    <span class="header-sep">/</span>
+    <span class="header-title">PR Gate · Setup Wizard</span>
+  </div>
+
+  <div class="progress" id="progress">
+    <div class="progress-step active" data-step="0">Jira</div>
+    <div class="progress-step" data-step="1">Merge Gate</div>
+    <div class="progress-step" data-step="2">Branch Rules</div>
+    <div class="progress-step" data-step="3">Reviewers</div>
+    <div class="progress-step" data-step="4">Generate</div>
+  </div>
+
+  <!-- ── Step 0: Jira ── -->
+  <div id="step-0">
+    <div class="card">
+      <div class="card-title">Jira connection</div>
+      <div class="card-sub">Tell PR Gate where your Jira site is and which project keys to look for in PR titles and branch names.</div>
+
+      <div class="field">
+        <label for="jira-url">Jira site URL</label>
+        <input type="text" id="jira-url" placeholder="yourcompany.atlassian.net" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field">
+        <label>Project keys <span class="label-hint">— type a key and press Enter or comma</span></label>
+        <div class="tag-input-wrap" id="key-wrap">
+          <input class="tag-input-field" id="key-input" placeholder="ZA" maxlength="12" spellcheck="false">
+        </div>
+        <div class="tag-hint">e.g. PROJ, PLAT, INF — one per project you want PR Gate to recognise</div>
+      </div>
+
+      <div class="field">
+        <label>Require ticket key in PR title?</label>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Enforce in title</div>
+            <div class="toggle-desc">PRs without a key like ZA-123 in the title will be blocked</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="require-in-title" checked>
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <span></span>
+      <button class="btn-next" onclick="goTo(1)">Next: Merge Gate →</button>
+    </div>
+  </div>
+
+  <!-- ── Step 1: Merge Gate ── -->
+  <div id="step-1" class="section-hidden">
+    <div class="card">
+      <div class="card-title">Merge gate</div>
+      <div class="card-sub">Choose which Jira statuses a ticket must be in before its PR can merge. PRs linked to a ticket outside these statuses will be blocked.</div>
+
+      <div class="field">
+        <label>Allowed statuses for merge</label>
+        <div class="status-grid" id="status-grid">
+          <!-- populated by JS -->
+        </div>
+        <div class="add-custom-status">
+          <input type="text" id="custom-status-input" placeholder="Add custom status…">
+          <button class="btn-sm" onclick="addCustomStatus()">Add</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="transition-open">Auto-transition on PR open <span class="label-hint">— optional</span></label>
+        <input type="text" id="transition-open" placeholder="e.g. In Progress — leave blank to skip">
+      </div>
+
+      <div class="field">
+        <label for="transition-merge">Auto-transition on PR merge <span class="label-hint">— optional</span></label>
+        <input type="text" id="transition-merge" placeholder="e.g. Done — leave blank to skip">
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-back" onclick="goTo(0)">← Back</button>
+      <button class="btn-next" onclick="goTo(2)">Next: Branch Rules →</button>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Branch naming ── -->
+  <div id="step-2" class="section-hidden">
+    <div class="card">
+      <div class="card-title">Branch naming</div>
+      <div class="card-sub">Optionally enforce a naming convention on branches. Use <code style="font-size:0.88em;background:#f5f5f5;padding:1px 5px;border-radius:3px">{ticket}</code> as a placeholder for the Jira key pattern.</div>
+
+      <div class="field">
+        <label>Enable branch naming check?</label>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Check branch names</div>
+            <div class="toggle-desc">PRs from branches that don't match the pattern will be flagged</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="branch-enabled">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+
+      <div id="branch-options" class="section-hidden">
+        <div class="field">
+          <label>Pattern preset</label>
+          <div class="pattern-presets" id="pattern-presets">
+            <button class="preset-btn active" data-pattern="^(feat|fix|chore)/{ticket}-[a-z0-9-]+$" onclick="selectPreset(this)">feat/ZA-123-slug</button>
+            <button class="preset-btn" data-pattern="^(feature|bugfix|hotfix)/{ticket}.*$" onclick="selectPreset(this)">feature/ZA-123</button>
+            <button class="preset-btn" data-pattern="^[a-z0-9-]+/{ticket}-[a-z0-9-]+$" onclick="selectPreset(this)">any-prefix/ZA-123-slug</button>
+            <button class="preset-btn" data-pattern="" onclick="selectPreset(this)">Custom regex</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="branch-pattern">Pattern <span class="label-hint">— regex, {ticket} expands to your project key(s)</span></label>
+          <input type="text" id="branch-pattern" value="^(feat|fix|chore)/{ticket}-[a-z0-9-]+$" spellcheck="false" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label>Enforcement</label>
+          <div class="enforcement-group">
+            <button class="enforcement-btn active block" onclick="setEnforcement('branch', 'block', this)">Block merge</button>
+            <button class="enforcement-btn warn" onclick="setEnforcement('branch', 'warn', this)">Warn only</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-back" onclick="goTo(1)">← Back</button>
+      <button class="btn-next" onclick="goTo(3)">Next: Reviewers →</button>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Reviewers ── -->
+  <div id="step-3" class="section-hidden">
+    <div class="card">
+      <div class="card-title">Reviewer policy</div>
+      <div class="card-sub">Control what happens when a PR has no reviewer assigned.</div>
+
+      <div class="field">
+        <label>Reviewer required</label>
+        <div class="enforcement-group">
+          <button class="enforcement-btn active block" onclick="setEnforcement('reviewer', 'block', this)">Block merge</button>
+          <button class="enforcement-btn warn" onclick="setEnforcement('reviewer', 'warn', this)">Warn only</button>
+          <button class="enforcement-btn off" onclick="setEnforcement('reviewer', 'off', this)">Off</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Auto-labelling from Jira</label>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Label from issue type</div>
+            <div class="toggle-desc">Bug → bug, Story → enhancement, Task → task</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="label-type" checked>
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Label from priority</div>
+            <div class="toggle-desc">Highest/High → priority:high, Medium → priority:medium, etc.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="label-priority">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-back" onclick="goTo(2)">← Back</button>
+      <button class="btn-next" onclick="generate()">Generate config →</button>
+    </div>
+  </div>
+
+  <!-- ── Step 4: Generate ── -->
+  <div id="step-4" class="section-hidden">
+    <div class="card">
+      <div class="card-title">Your config files</div>
+      <div class="card-sub">Commit both files to your repository root. Add the three GitHub secrets listed below, then set <strong>PR Gate</strong> as a required status check in your branch protection rules.</div>
+
+      <div class="output-file">
+        <div class="output-file-header">
+          <span class="output-filename">.pr-gate.yml</span>
+          <button class="copy-btn" onclick="copyFile('config-output', this)">Copy</button>
+        </div>
+        <pre class="code-block" id="config-output"></pre>
+      </div>
+
+      <div class="output-file">
+        <div class="output-file-header">
+          <span class="output-filename">.github/workflows/pr-gate.yml</span>
+          <button class="copy-btn" onclick="copyFile('workflow-output', this)">Copy</button>
+        </div>
+        <pre class="code-block" id="workflow-output"></pre>
+      </div>
+
+      <div class="secrets-box">
+        <h4>GitHub secrets to add</h4>
+        <div class="secret-row">
+          <span class="secret-name">JIRA_BASE_URL</span>
+          <span class="secret-desc" id="secret-url-hint">your Jira site URL</span>
+        </div>
+        <div class="secret-row">
+          <span class="secret-name">JIRA_EMAIL</span>
+          <span class="secret-desc">the email address for your Jira API token</span>
+        </div>
+        <div class="secret-row">
+          <span class="secret-name">JIRA_API_TOKEN</span>
+          <span class="secret-desc">generate at id.atlassian.com → Security → API tokens</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-back" onclick="goTo(3)">← Back</button>
+      <button class="btn-next" onclick="goTo(0); reset()">Start over</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+const state = {
+  jiraUrl: '',
+  projectKeys: [],
+  requireInTitle: true,
+  allowedStatuses: ['In Review', 'Ready for QA'],
+  transitionOnOpen: '',
+  transitionOnMerge: '',
+  branchEnabled: false,
+  branchPattern: '^(feat|fix|chore)/{ticket}-[a-z0-9-]+$',
+  branchEnforcement: 'block',
+  reviewerEnforcement: 'block',
+  labelType: true,
+  labelPriority: false,
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────
+let currentStep = 0
+
+function goTo(step) {
+  document.getElementById(`step-${currentStep}`).classList.add('section-hidden')
+  document.getElementById(`step-${step}`).classList.remove('section-hidden')
+  currentStep = step
+  updateProgress()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function updateProgress() {
+  document.querySelectorAll('.progress-step').forEach((el, i) => {
+    el.classList.toggle('active', i === currentStep)
+    el.classList.toggle('done', i < currentStep)
+  })
+}
+
+// ── Tag input (project keys) ──────────────────────────────────────────────
+const keyInput = document.getElementById('key-input')
+const keyWrap = document.getElementById('key-wrap')
+
+keyWrap.addEventListener('click', () => keyInput.focus())
+
+keyInput.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ',') && keyInput.value.trim()) {
+    e.preventDefault()
+    addKey(keyInput.value.trim().replace(',', '').toUpperCase())
+    keyInput.value = ''
+  }
+  if (e.key === 'Backspace' && !keyInput.value && state.projectKeys.length) {
+    removeKey(state.projectKeys[state.projectKeys.length - 1])
+  }
+})
+
+keyInput.addEventListener('blur', () => {
+  if (keyInput.value.trim()) {
+    addKey(keyInput.value.trim().toUpperCase())
+    keyInput.value = ''
+  }
+})
+
+function addKey(key) {
+  if (!key || state.projectKeys.includes(key)) return
+  state.projectKeys.push(key)
+  renderTags()
+}
+
+function removeKey(key) {
+  state.projectKeys = state.projectKeys.filter(k => k !== key)
+  renderTags()
+}
+
+function renderTags() {
+  document.querySelectorAll('.tag').forEach(t => t.remove())
+  state.projectKeys.forEach(key => {
+    const tag = document.createElement('span')
+    tag.className = 'tag'
+    tag.innerHTML = `${key}<button class="tag-remove" onclick="removeKey('${key}')">×</button>`
+    keyWrap.insertBefore(tag, keyInput)
+  })
+}
+
+// ── Status checkboxes ─────────────────────────────────────────────────────
+const COMMON_STATUSES = ['In Review', 'Ready for QA', 'In Testing', 'Approved', 'Ready to Deploy']
+
+function renderStatusGrid() {
+  const grid = document.getElementById('status-grid')
+  grid.innerHTML = ''
+  COMMON_STATUSES.forEach(s => {
+    const checked = state.allowedStatuses.includes(s)
+    const el = document.createElement('label')
+    el.className = `status-check${checked ? ' checked' : ''}`
+    el.innerHTML = `
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <span class="status-check-box">${checked ? '✓' : ''}</span>
+      ${s}
+    `
+    el.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) {
+        state.allowedStatuses.push(s)
+        el.classList.add('checked')
+        el.querySelector('.status-check-box').textContent = '✓'
+      } else {
+        state.allowedStatuses = state.allowedStatuses.filter(x => x !== s)
+        el.classList.remove('checked')
+        el.querySelector('.status-check-box').textContent = ''
+      }
+    })
+    grid.appendChild(el)
+  })
+}
+
+function addCustomStatus() {
+  const input = document.getElementById('custom-status-input')
+  const val = input.value.trim()
+  if (!val || state.allowedStatuses.includes(val)) { input.value = ''; return }
+  state.allowedStatuses.push(val)
+
+  const grid = document.getElementById('status-grid')
+  const el = document.createElement('label')
+  el.className = 'status-check checked'
+  el.innerHTML = `
+    <input type="checkbox" checked>
+    <span class="status-check-box">✓</span>
+    ${val}
+  `
+  el.querySelector('input').addEventListener('change', e => {
+    if (!e.target.checked) {
+      state.allowedStatuses = state.allowedStatuses.filter(x => x !== val)
+      el.remove()
+    }
+  })
+  grid.appendChild(el)
+  input.value = ''
+}
+
+document.getElementById('custom-status-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addCustomStatus() }
+})
+
+// ── Enforcement toggles ───────────────────────────────────────────────────
+function setEnforcement(group, value, btn) {
+  if (group === 'branch') state.branchEnforcement = value
+  if (group === 'reviewer') state.reviewerEnforcement = value
+  btn.closest('.enforcement-group').querySelectorAll('.enforcement-btn').forEach(b => {
+    b.classList.remove('active')
+  })
+  btn.classList.add('active')
+}
+
+// ── Branch toggle ─────────────────────────────────────────────────────────
+document.getElementById('branch-enabled').addEventListener('change', e => {
+  state.branchEnabled = e.target.checked
+  document.getElementById('branch-options').classList.toggle('section-hidden', !e.target.checked)
+})
+
+// ── Pattern presets ───────────────────────────────────────────────────────
+function selectPreset(btn) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  const pattern = btn.dataset.pattern
+  document.getElementById('branch-pattern').value = pattern
+  state.branchPattern = pattern
+  document.getElementById('branch-pattern').disabled = !!pattern
+}
+
+document.getElementById('branch-pattern').addEventListener('input', e => {
+  state.branchPattern = e.target.value
+})
+
+// ── Sync simple fields on blur ────────────────────────────────────────────
+document.getElementById('jira-url').addEventListener('blur', e => {
+  state.jiraUrl = e.target.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')
+  e.target.value = state.jiraUrl
+})
+document.getElementById('require-in-title').addEventListener('change', e => {
+  state.requireInTitle = e.target.checked
+})
+document.getElementById('transition-open').addEventListener('blur', e => {
+  state.transitionOnOpen = e.target.value.trim()
+})
+document.getElementById('transition-merge').addEventListener('blur', e => {
+  state.transitionOnMerge = e.target.value.trim()
+})
+document.getElementById('label-type').addEventListener('change', e => {
+  state.labelType = e.target.checked
+})
+document.getElementById('label-priority').addEventListener('change', e => {
+  state.labelPriority = e.target.checked
+})
+
+// ── Code generation ───────────────────────────────────────────────────────
+function y(val) {
+  if (typeof val === 'boolean') return val ? 'true' : 'false'
+  if (typeof val === 'string') return `"${val}"`
+  return String(val)
+}
+
+function generateConfig() {
+  const keys = state.projectKeys.length ? state.projectKeys : ['PROJ']
+  const lines = []
+  lines.push(`jira:`)
+  lines.push(`  project_keys: [${keys.map(k => `"${k}"`).join(', ')}]`)
+  lines.push(`  require_in_title: ${state.requireInTitle}`)
+  lines.push(`  allowed_statuses_for_merge:`)
+  state.allowedStatuses.forEach(s => lines.push(`    - "${s}"`))
+  if (state.transitionOnOpen) lines.push(`  transition_on_pr_open: "${state.transitionOnOpen}"`)
+  if (state.transitionOnMerge) lines.push(`  transition_on_pr_merge: "${state.transitionOnMerge}"`)
+  lines.push(``)
+  if (state.branchEnabled && state.branchPattern) {
+    lines.push(`branch:`)
+    lines.push(`  pattern: "${state.branchPattern}"`)
+    lines.push(`  enforcement: ${state.branchEnforcement}`)
+    lines.push(``)
+  }
+  lines.push(`reviewers:`)
+  lines.push(`  require_assigned: ${state.reviewerEnforcement}`)
+  lines.push(``)
+  lines.push(`labels:`)
+  lines.push(`  from_jira_type: ${state.labelType}`)
+  lines.push(`  from_jira_priority: ${state.labelPriority}`)
+  return lines.join('\n')
+}
+
+function generateWorkflow() {
+  const lines = []
+  lines.push(`name: PR Gate`)
+  lines.push(``)
+  lines.push(`on:`)
+  lines.push(`  pull_request:`)
+  lines.push(`    types: [opened, reopened, synchronize, ready_for_review]`)
+  lines.push(`  pull_request_review:`)
+  lines.push(`    types: [submitted]`)
+  lines.push(``)
+  lines.push(`permissions:`)
+  lines.push(`  checks: write`)
+  lines.push(`  pull-requests: read`)
+  lines.push(``)
+  lines.push(`jobs:`)
+  lines.push(`  pr-gate:`)
+  lines.push(`    runs-on: ubuntu-latest`)
+  lines.push(`    steps:`)
+  lines.push(`      - uses: actions/checkout@v4`)
+  lines.push(``)
+  lines.push(`      - uses: zagware/pr-gate@v1`)
+  lines.push(`        with:`)
+  lines.push(`          jira-base-url: \${{ secrets.JIRA_BASE_URL }}`)
+  lines.push(`          jira-email: \${{ secrets.JIRA_EMAIL }}`)
+  lines.push(`          jira-api-token: \${{ secrets.JIRA_API_TOKEN }}`)
+  return lines.join('\n')
+}
+
+function generate() {
+  // Sync any remaining fields
+  state.jiraUrl = document.getElementById('jira-url').value.trim().replace(/^https?:\/\//, '')
+  state.transitionOnOpen = document.getElementById('transition-open').value.trim()
+  state.transitionOnMerge = document.getElementById('transition-merge').value.trim()
+  state.branchPattern = document.getElementById('branch-pattern').value.trim()
+
+  document.getElementById('config-output').textContent = generateConfig()
+  document.getElementById('workflow-output').textContent = generateWorkflow()
+
+  const urlHint = document.getElementById('secret-url-hint')
+  urlHint.textContent = state.jiraUrl
+    ? `https://${state.jiraUrl}`
+    : 'your Jira site URL (https://yourcompany.atlassian.net)'
+
+  goTo(4)
+}
+
+// ── Copy buttons ──────────────────────────────────────────────────────────
+function copyFile(id, btn) {
+  const text = document.getElementById(id).textContent
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!'
+    btn.classList.add('copied')
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied') }, 2000)
+  })
+}
+
+function reset() {
+  location.reload()
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+renderStatusGrid()
+</script>
+</body>
+</html>
