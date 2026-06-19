@@ -10,6 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,16 +25,17 @@ jobs:
 
       - run: npm run build
 
-      - name: Verify dist is committed
+      # On pushes to main, commit any changed dist/ back to the branch.
+      # This keeps dist/ in sync without requiring contributors to build locally.
+      - name: Commit updated dist (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           if [[ -n "$(git status dist --porcelain)" ]]; then
-            echo "::error::dist/ is out of date — run 'npm run build' and commit the result"
-            git diff dist
-            exit 1
+            git add dist/
+            git commit -m "chore: rebuild dist [skip ci]"
+            git push
+          else
+            echo "dist/ is already up to date"
           fi
-
-      - name: Run self-check (dry run)
-        if: github.event_name == 'pull_request'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "Build OK — integration tests would run here"
