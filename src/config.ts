@@ -52,11 +52,9 @@ export function loadConfig(path: string): Config {
     throw new Error('Config must include at least one jira.project_keys entry')
   }
   return {
-    ...DEFAULTS,
-    ...raw,
-    jira: { ...JIRA_DEFAULTS, ...raw.jira },
-    branch: { ...DEFAULTS.branch, ...raw.branch },
-    reviewers: { ...DEFAULTS.reviewers, ...raw.reviewers },
-    labels: { ...DEFAULTS.labels, ...raw.labels },
+    jira: { ...JIRA_DEFAULTS, ...raw.jira } as JiraConfig,
+    branch: { ...DEFAULTS.branch, ...raw.branch } as BranchConfig,
+    reviewers: { ...DEFAULTS.reviewers, ...raw.reviewers } as ReviewerConfig,
+    labels: { ...DEFAULTS.labels, ...raw.labels } as LabelsConfig,
   }
 }
